@@ -1,3 +1,5 @@
+*https://gitto-io.vercel.app/*
+
 # Project Structure
 
 - src/components: Contains React components used throughout the application.
