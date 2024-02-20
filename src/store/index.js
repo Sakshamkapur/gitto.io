@@ -6,7 +6,13 @@ const useGlobalStore = create((set) => ({
   users: [],
   setUsers: (users) => set({ users }),
   repos: [],
-  setRepos: (repos) => set({ repos })
+  setRepos: (repos) => set({ repos }),
+  repoData: null,
+  setRepoData: (repoData) => set({ repoData }),
+  selectedRepos: {},
+  setSelectedRepos: (selectedRepos) => set({ selectedRepos }),
+  commitData: {},
+  setCommitData: (commitData) => set({ commitData })
 }))
 
 export default useGlobalStore;

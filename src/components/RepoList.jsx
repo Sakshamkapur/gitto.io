@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { listRepos } from "../api/repo";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import useGlobalStore from "../store";
+import CommitHistoryChart from "./CommitHistoryChart";
 
 let timer;
 const RepoList = () => {
-    const { repos, setRepos } = useGlobalStore(({ repos, setRepos }) => ({ repos, setRepos })) 
+    const { repos, setRepos, selectedRepos, setSelectedRepos } = useGlobalStore(({ repos, setRepos, selectedRepos, setSelectedRepos }) => ({ repos, setRepos, selectedRepos, setSelectedRepos })) 
     const [search, setSearch] = useState('');
     const [repositories, setRepositories] = useState([]);
     const [sortDirection, setSortDirection] = useState('desc');
+    const navigate = useNavigate();
     const params = useParams();
     
     useEffect(() => {
@@ -49,6 +51,16 @@ const RepoList = () => {
         }, 500);
     }
 
+    const handleSelection = (data) => {
+        const found = selectedRepos[data.id];
+        if(!!found){
+            delete selectedRepos[data.id];
+            setSelectedRepos(selectedRepos)
+        } else {
+            setSelectedRepos({ ...selectedRepos, [data.id]: data})
+        }
+    }
+    
     return <div className="container mx-auto px-4 py-8">
         <div className="w-screen container max-w-full m-0 p-2 box-border">
             <div className="w-full bg-custom-third rounded-xl overflow-hidden">
@@ -58,6 +70,7 @@ const RepoList = () => {
                 </div>
             </div>
         </div>
+        {Object.keys(selectedRepos).length > 0 && <CommitHistoryChart />}
         <div className="flex justify-between mb-4 px-4">
             <button className="flex items-center text-black hover:bg-gray-200 rounded-md p-2 text-sm transition-colors" onClick={() => sortRepositories('name')}>
                 Name {sortDirection === 'asc' ? '(Ascending)':'(Descending)'}
@@ -74,21 +87,24 @@ const RepoList = () => {
         </div>
         <div className="flex flex-wrap -mx-4">
         {repositories.map(repo => (
-            <div key={repo.id} className="w-full sm:w-1/2 lg:w-1/3 px-4 mb-4">
-            <div className="bg-custom-third rounded-lg shadow-lg overflow-hidden">
-                <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{repo.name}</h3>
-                <p className="text-gray-700 mb-2">{repo.description}</p>
-                <div className="flex justify-between text-sm text-gray-600">
-                    <div>
-                    <span className="mr-2">Stars: {repo.stargazers_count}</span>
-                    <span className="mr-2">Forks: {repo.forks_count}</span>
-                    <span>Open Issues: {repo.open_issues_count}</span>
+            <div key={repo.id} className="xl:w-full sm:w-1/2 lg:w-1/3 px-4 mb-4" onClick={() => handleSelection(repo)}>
+                <div className={selectedRepos[repo.id] ? "bg-gray-200 rounded-lg shadow-lg overflow-hidden transition duration-300 transform hover:scale-105 cursor-pointer": "bg-custom-third rounded-lg shadow-lg overflow-hidden hover:bg-gray-200 transition duration-300 transform hover:scale-105 cursor-pointer"}>
+                    <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">{repo.name}</h3>
+                    <p className="text-gray-700 mb-2">{repo.description}</p>
+                    <div className="flex justify-between text-sm text-gray-600">
+                        <div>
+                        <span className="mr-2">Stars: {repo.stargazers_count}</span>
+                        <span className="mr-2">Forks: {repo.forks_count}</span>
+                        <span>Open Issues: {repo.open_issues_count}</span>
+                        </div>
+                        <div className="flex gap-3">    
+                            <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View on GitHub</a>
+                            <a href={`/profile/${params.username}/${repo.name}`} rel="noopener noreferrer" className="text-blue-600 hover:underline">Detailed View</a>
+                        </div>
                     </div>
-                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View on GitHub</a>
+                    </div>
                 </div>
-                </div>
-            </div>
             </div>
         ))}
         </div>
